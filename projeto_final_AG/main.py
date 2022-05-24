@@ -1,47 +1,36 @@
-import csv
-from collections import defaultdict
-
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
+from sklearn import preprocessing
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.svm import SVC
 
-data_set = pd.read_csv('dataset/data_car.csv')
+data_set = pd.read_csv('dataset/wine.csv')
 
-lb_buying = preprocessing.LabelEncoder()
-data_set["buying"] = lb_buying.fit_transform(data_set["buying"])
+# X - Caracteristicas
+X = data_set[['Alcohol', 'Malic_acid', 'Ash', 'Alcalinity_of_ash', 'Magnesium', 'Total_phenols', 'Flavanoids',
+              'Nonflavanoid_phenols', 'Proanthocyanins', 'Color_intensity', 'Hue', 'OD280_OD315', 'Proline']]
 
-lb_maint = preprocessing.LabelEncoder()
-data_set["maint"] = lb_maint.fit_transform(data_set["maint"])
+# Y - Rótulo
+Y = data_set['Class']
 
-lb_doors = preprocessing.LabelEncoder()
-data_set["doors"] = lb_doors.fit_transform(data_set["doors"])
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3)
 
-lb_persons = preprocessing.LabelEncoder()
-data_set["persons"] = lb_persons.fit_transform(data_set["persons"])
+modelo = SVC()
+modelo.fit(X_train, Y_train)
 
-lb_lub_boot = preprocessing.LabelEncoder()
-data_set["lug_boot"] = lb_lub_boot.fit_transform(data_set["lug_boot"])
+predicoes_treino = modelo.predict(X_train)
+matriz_conf_treino = confusion_matrix(Y_train, predicoes_treino)
 
-lb_safety = preprocessing.LabelEncoder()
-data_set["safety"] = lb_safety.fit_transform(data_set["safety"])
-
-lb_class = preprocessing.LabelEncoder()
-data_set["class"] = lb_class.fit_transform(data_set["class"])
-
-my_dict = defaultdict(list)
-
-with open('dataset/data_set.csv', 'r') as csv_file:
-    csv_reader = csv.DictReader(csv_file)
-    for line in csv_reader:
-        for key, value in line.items():
-            my_dict[key].append(value)
-
-print(my_dict)
-# dick = pd.read_csv('dataset/data_set.csv').to_string()
-
-# dados_filtrados = data_set[["buying", "maint", "doors", "persons", "lug_boot", "safety", "class"]]
-# sns.set_theme(style="ticks")
-# grafico = sns.pairplot(dados_filtrados)
-#
-# plt.show()
+ax = sns.heatmap(matriz_conf_treino, annot=True, cmap='Greens', fmt='d',
+                 xticklabels=['Alcohol', 'Malic_acid', 'Ash', 'Alcalinity_of_ash', 'Magnesium', 'Total_phenols',
+                              'Flavanoids', 'Nonflavanoid_phenols', 'Proanthocyanins', 'Color_intensity', 'Hue',
+                              'OD280_OD315', 'Proline']
+                 , yticklabels=['Alcohol', 'Malic_acid', 'Ash', 'Alcalinity_of_ash', 'Magnesium', 'Total_phenols',
+                                'Flavanoids', 'Nonflavanoid_phenols', 'Proanthocyanins', 'Color_intensity', 'Hue',
+                                'OD280_OD315', 'Proline'])
+ax.set(ylabel='Real', xlabel='Predito', title='Dados de Treino')
+plt.show()
